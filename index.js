@@ -1,6 +1,8 @@
 const express = require("express")
 const app = express()
 
+app.use(express.json())
+
 let persons = [
     { 
       "id": "1",
@@ -25,6 +27,13 @@ let persons = [
 ]
 
 const requestDate = new Date()
+
+const generateId = () => {
+    const maxId = persons.length > 0
+      ? Math.max(...persons.map(p => Number(p.id)))
+      : 0
+    return String(maxId + 1)
+  }
 
 app.get("/", (request, response) => {
     response.send('<h1>Welcome to phonebook!</h1>')
@@ -56,6 +65,32 @@ app.delete('/api/persons/:id', (request, response) => {
   
     response.status(204).end()
   })
+
+app.post('/api/persons', (request, response) => {
+    const body = request.body
+
+    if (!body.name || !body.number){
+        response.status(404).json({
+            error: "empty"
+        })
+    }
+
+    if (persons.some(person => person.name === body.name)){
+        response.status(404).json({
+            error: "name must be unique"
+        })
+    }
+
+    const person = {
+        id: generateId(),
+        name: body.name,
+        number: body.number,
+    }
+
+    persons = persons.concat(person)
+
+    response.json(person)
+})
 
 const PORT = 3000
 app.listen(PORT, () => {
