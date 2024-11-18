@@ -41,10 +41,10 @@ app.get("/api/persons/:id", (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    persons = persons.filter(person => person.id !== id)
-  
-    response.status(204).end()
+    Person.findByIdAndDelete(request.params.id).then(deletedPerson => { 
+        response.json(deletedPerson)
+        response.status(204).end()
+    })
   })
 
 app.post('/api/persons', (request, response) => {
@@ -56,21 +56,14 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    if (persons.some(person => person.name === body.name)){
-        response.status(404).json({
-            error: "name must be unique"
-        })
-    }
-
-    const person = {
-        id: generateId(),
+    const person = new Person({
         name: body.name,
-        number: body.number,
-    }
+        number: body.number
+    })
 
-    persons = persons.concat(person)
-
-    response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
 const PORT = process.env.PORT
