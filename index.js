@@ -20,7 +20,9 @@ app.get("/", (request, response) => {
 })
 
 app.get("/info", (request,response) => {
-    response.send(`<p>Phonebook has info for ${persons.length} people</p> <p>${requestDate}</p>`)
+    Person.countDocuments({}).then(count => {
+        response.send(`<p>Phonebook has info for ${count} people</p> <p>${requestDate}</p>`)
+    })
 })
 
 app.get("/api/persons", (request, response) => {
