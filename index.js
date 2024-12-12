@@ -52,7 +52,7 @@ app.delete('/api/persons/:id', (request, response) => {
     })
   })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     const person = new Person({
@@ -63,6 +63,7 @@ app.post('/api/persons', (request, response) => {
     person.save().then(savedPerson => {
         response.json(savedPerson)
     })
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response) => {
@@ -83,9 +84,9 @@ const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
   }
 
-const incorrectFormat = (error, request, response, next) => {
+  const errorHandler = (error, request, response, next) => {
     console.error(error.message)
-
+  
     if (error.name === 'CastError') {
       return response.status(400).send({ error: 'malformatted id' })
     } else if (error.name === 'ValidationError') {
@@ -93,10 +94,10 @@ const incorrectFormat = (error, request, response, next) => {
     }
   
     next(error)
-}
+  }
 
 app.use(unknownEndpoint)
-app.use(incorrectFormat)
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
